@@ -10,9 +10,24 @@ UNIST 이정혜 교수님의 경영공학과 수업 MGE30301: Data Mining 을 �
 #### Contents
 - Python
     > Python에 대한 기초적인 개념 및 데이터 처리를 위한, pandas, numpy, matplotlib 에 대한 설명 및 예제 코드를 정리했습니다.
+    - 자료형, 조건문, 반복문, 함수
+    - 객체지향 프로그래밍 
+    - Pandas dataframe 처리
+    - numpy array처리
+    - matplotlib을 이용한 시각화
+    
 - Data structure and algorithm
+    > 자료구조와 알고리즘 강의를 들으면서 효율적인 데이터 처리에 대한 공부를 정리해 보았습니다.
+    - Introduction and Efficiency
+    - List-Based Collections
+    - Searching and Sorting
+    - Maps and Hashing
+    - Trees
+    - Graphs
+    - Case Studies in Algorithms
+    
 - Statistics
-
+    > 
 
 #### DOCUMENTATION:
 문서는 공부내용은 jupter notebook 과 Python 를 통해 구현했습니다.
