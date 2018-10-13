@@ -1,0 +1,62 @@
+---
+title: "Week 1 Lab"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+### Data Description
+The Arbuthnot data set refers to Dr. John Arbuthnot, an 18th century physician, writer, and mathematician. He was interested in the ratio of newborn boys to newborn girls, so he gathered the baptism records for children born in London for every year from 1629 to 1710. We can take a look at the data by typing its name into the console.
+
+arbuthnot that has 82 observations on 3 variables
+
+#### Data load
+```{r}
+source("http://www.openintro.org/stat/data/arbuthnot.R")
+```
+```{r}
+arbuthnot
+```
+
+#### Check Dimension
+```{r}
+dim(arbuthnot)
+```
+
+#### Check name of columns
+```{r}
+names(arbuthnot)
+```
+
+#### Check certain columns
+```{r}
+arbuthnot$boys
+```
+
+#### ggplot : (data = ,aes(x=,y=)) + geom_chartstyle()
+```{r}
+ggplot(data = arbuthnot, aes(x = year, y = girls)) + geom_point()
+```
+
+```{r}
+arbuthnot$boys + arbuthnot$girls
+```
+
+#### %>% operator is called piping operator, takes the output of the current line and pipes
+```{r}
+arbuthnot <- arbuthnot %>%
+mutate(total = boys + girls)
+```
+
+#### Using this mutate a new variable called total that is the sum of the variables called boys and girls
+```{r}
+ggplot(data = arbuthnot, aes(x = year, y = total)) +geom_line()
+```
+

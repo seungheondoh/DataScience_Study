@@ -1,0 +1,214 @@
+---
+title: "Exploring the BRFSS data"
+author: SeungHeon DOh
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+2018.03.28
+
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(knitr)
+library(pander)
+library(ggplot2)
+library(colorspace)
+library(tidyr)
+library(dplyr)
+```
+
+### Load data
+
+Make sure your data and R Markdown files are in the same directory. When
+loaded your data file will be called `brfss2013`. Delete this note when 
+before you submit your work. 
+
+```{r load-data}
+load("brfss2013.RData")
+```
+
+
+
+* * *
+
+## Part 1: Data
+
+The Behavioral Risk Factor Surveillance System (BRFSS) is an **observational study targeting the non-institutionalized adult population, aged 18 years or older** , who reside in the United States. The study is a retrospective observational study as it asks respondents about various aspects of their health in the previous months to their contact. The study’s observations are collected by  **contacting respondents by phone calls **. **Random sampling ** is used to select the phone numbers and which adult to question at each location.d. **No causality can be determined from this observational study, only associational relationships**. Any identified associations will also be complicated by lurking variables as it will be difficult to rule out other confounding factors that may lead to such associations. the sample size is **large** and data is representive of the US adult population so the study is **generalizable**, but the scope of inference is narrow and **causality can not be determined** considering these and other limitations of this observational study’s design.
+
+
+#### In conclusion : data set is respondents by phone calls, andom sampling, No causality, only associational relationships, large, generalizable
+
+#### load Data
+```{r subsetCA}
+df = brfss2013
+names(df)
+```
+```{r}
+str(df)
+```
+* * *
+
+## Part 2: Research questions
+
+**Research quesion 1:** 
+
+*What are the statistical characteristics of the _Four-level smoker status_bim5? Does it follow a normal distribution?*
+
+variable: `_bmi5` (continuous) computed by researchers in kg/m^2
+Relevance : In category of human, the min and max value of bmi is exist.And we need to find normal point of BMI. 
+
+
+**Research quesion 2:** 
+
+*Does a correlation exist between Are a having a lower reported income and reported days with poor physical health or poor mental health in the last 30 days?*
+
+explanatory variable: `income2`(income level)
+response variables: `physhlth` and `menthlth` in days
+
+Relevance : According to income level, people take a health care and all of these variables are continuous
+
+**Research quesion 3:** 
+
+*Does a correlation exist between the body mass index(BMI) of the individual answering the survey and having cardiac stroke or having a heart attack? which one is more sensitive*
+
+explanatory variable: `_bmi5` (continuous) computed by researchers in kg/m^2
+response variables: `cvdstrk3`  and `cvdinfr4`  
+
+Relevance : According to bmi5, people take difference in Number Of Days Physical Health Not Good, and cost problem
+
+
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+---
+
+####Research quesion 1:
+*What are the statistical characteristics of the _Four-level smoker status_bim5? Does it follow a normal distribution?*
+
+
+
+```{r}
+df$X_bmi5 = as.numeric(df$X_bmi5)/100
+```
+
+```{r}
+summary(df$X_bmi5)
+```
+
+```{r}
+sd(df$X_bmi5, na.rm=TRUE)
+```
+```{r}
+BMI = ggplot(df, aes(x=X_bmi5)) + theme_bw() + geom_histogram(binwidth=2, alpha=0.5, aes(y=..density..), fill="lightblue", col="grey") + stat_function(fun=dnorm, args=list(mean=26.63, sd=6.1566), col="red") + geom_rug() + labs(title="Distribution of BMI", x="BMI", y="Frequency")
+```
+
+```{r}
+BMI
+```
+```{r}
+qqnorm(df$X_bmi5) 
+qqline(df$X_bmi5)
+```
+
+The sample looks like it does not follow a normal distribution, it is seem to be not linear shape of the QQ plot.
+Regardless, we can use the Shapiro-Wilk normality test to assess this more thoroughly. The null hypothesis (Ho) is that the data follow a normal distribution, and we will reject the Ho if the p-value < 0.05 .
+```{r}
+shapiro.test(sample(df$X_bmi5, 5000))
+```
+
+**Conclusion** `p < 2.2e-16`, we can assume that this sample **does not follow a normal distribution.**
+
+---
+
+####Research quesion 2:
+*Does a correlation exist between Are a having a lower reported income and reported days with poor physical health or poor mental health in the last 30 days?*
+```{r}
+allprep <- function(...) {
+    study <- brfss2013 %>%
+        select(...) 
+    return(study[complete.cases(study),])
+}
+```
+
+
+```{r}
+dat2 <- allprep(physhlth, menthlth, income2)
+pandoc.table(head(dat2), justify = "center")
+```
+```{r}
+summary(dat2$physhlth)
+```
+```{r}
+summary(dat2$menthlth)
+```
+
+```{r}
+ggplot(dat2, aes(x= income2, y = 30, fill = physhlth)) + geom_bar(stat="identity", position = "fill") + 
+  scale_y_continuous(labels = c("0", "7.5", "15", "22.5", "30")) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1), plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(dat2, aes(x= income2, y = 247, fill = menthlth)) + 
+  geom_bar(stat="identity", position = "fill") + 
+  scale_y_continuous(labels = c("0", "61.75", "123.5", "185.25", "247")) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1), plot.title = element_text(hjust = 0.5))
+```
+
+**Conclusion** 
+as you see in chart, **if income increase,then poor mental health. And  even if income increase, phyiscal health has no relationship**`
+
+
+
+####Research quesion 3:
+*Does a correlation exist between the body mass index(BMI) of the individual answering the survey and having cardiac stroke or having a heart attack? which one is more sensitive*
+
+explanatory variable: `_bmi5` (continuous) computed by researchers in kg/m^2
+response variables: `cvdstrk3`  and `cvdinfr4`  
+```{r}
+summary(df$X_bmi5)
+```
+
+```{r}
+sd(df$X_bmi5, na.rm=TRUE)
+```
+
+```{r}
+table(df$cvdstrk3)
+```
+
+```{r}
+table(df$cvdinfr4)
+```
+
+```{r}
+ggplot(df, aes(x=cvdstrk3, y=X_bmi5, fill=cvdstrk3)) + theme_bw() +
+ geom_violin() + labs(title="Violin Plot",
+ x="having cardiac stroke", y="BMI (kg/m^2)")
+```
+
+```{r}
+temp = filter(df, cvdstrk3=="Yes" | cvdstrk3=="No") %>% select(X_bmi5, cvdstrk3)
+chisq.test(temp$X_bmi5, temp$cvdstrk3)
+```
+```{r}
+ggplot(df, aes(x=cvdinfr4, y=X_bmi5, fill=cvdinfr4)) + theme_bw() +
+ geom_violin() + labs(title="Violin Plot",
+ x="having heart attack", y="BMI (kg/m^2)")
+```
+
+```{r}
+temp = filter(df, cvdinfr4=="Yes" | cvdinfr4=="No") %>% select(X_bmi5, cvdinfr4)
+chisq.test(temp$X_bmi5, temp$cvdinfr4)
+```
+**Conclusion** 
+as you see in chart, **BMI and Heart disease have no realtionship**

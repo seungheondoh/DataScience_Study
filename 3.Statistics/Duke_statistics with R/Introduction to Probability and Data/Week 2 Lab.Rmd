@@ -1,0 +1,182 @@
+---
+title: "Week 2 Lab"
+output:
+  html_document
+---
+SeungHeonDoh
+2018/02/21
+
+
+```{r load-packages, message=FALSE}
+library(stats)
+library(dplyr)
+library(ggplot2)
+```
+
+### Data Description
+The data frame containing 32735 flights that shows up in your workspace is a data matrix, with each row representing an observation and each column representing a variable. R calls this data format a data frame, which is a term that will be used throughout the labs.
+
+
+
+#### Data load
+
+```{r load-data}
+load(url("https://stat.duke.edu/~mc301/data/nycflights.RData"))
+```
+
+```{r}
+names(nycflights) 
+```
+
+  - year, month, day: Date of departure
+  - dep_time, arr_time: Departure and arrival times, local timezone.
+  - dep_delay, arr_delay: Departure and arrival delays, in minutes. Negative times represent early departures/arrivals.
+  - carrier: Two letter carrier abbreviation.
+    - 9E: Endeavor Air Inc.
+    - AA: American Airlines Inc.
+    - AS: Alaska Airlines Inc.
+    - B6: JetBlue Airways
+    - DL: Delta Air Lines Inc.
+    - EV: ExpressJet Airlines Inc.
+    - F9: Frontier Airlines Inc.
+    - FL: AirTran Airways Corporation
+    - HA: Hawaiian Airlines Inc.
+    - MQ: Envoy Air
+    - OO: SkyWest Airlines Inc.
+    - UA: United Air Lines Inc.
+    - US: US Airways Inc.
+    - VX: Virgin America
+    - WN: Southwest Airlines Co.
+    - YV: Mesa Airlines Inc.
+  - tailnum: Plane tail number
+  - flight: Flight number
+  - origin, dest: Airport codes for origin and destination. (Google can help you with what code stands for which airport.)
+  - air_time: Amount of time spent in the air, in minutes.
+  - distance: Distance flown, in miles.
+
+
+#### viewing its dimensions and data types is str, which stands for structure.
+```{r}
+str(nycflights)
+```
+
+#### This function says to plot the dep_delay variable from the nycflights data frame on the x-axis. It also defines a geom (short for geometric object), which describes the type of plot you will produce.
+```{r}
+ggplot(data = nycflights, aes(x = dep_delay)) +geom_histogram()
+```
+
+#### Check certain columns
+```{r}
+ggplot(data = nycflights, aes(x = dep_delay)) +
+  geom_histogram(binwidth = 150)
+```
+
+
+
+#### If we want to focus on departure delays of flights headed to RDU only, we need to first filter the data for flights headed to RDU (dest == "RDU") and then make a histogram of only departure delays of only those flights.
+```{r}
+rdu_flights <- nycflights %>% filter(dest == "RDU")
+ggplot(data = rdu_flights, aes(x = dep_delay)) + geom_histogram()
+```
+
+#### summaries function created a list of two elements. mean_dd, sd_dd, n 
+```{r}
+rdu_flights %>%
+  summarise(mean_dd = mean(dep_delay), sd_dd = sd(dep_delay), n = n())
+```
+
+#### We can also filter based on multiple criteria. Suppose we are interested in flights headed to San Francisco (SFO) in February:
+
+```{r}
+sfo_feb_flights <- nycflights %>%
+  filter(dest == "SFO", month == 2)
+```
+
+#### Make a histogram and calculate appropriate summary statistics for arrival delays of  sfo_feb_flights
+```{r}
+ggplot(data=sfo_feb_flights,aes(x=arr_delay))+geom_histogram(binwidth=5)
+```
+
+```{r}
+rdu_flights %>%
+  group_by(origin) %>%
+  summarise(mean_dd = mean(dep_delay), sd_dd = sd(dep_delay), n = n())
+```
+
+####  interquartile range for arr_delays of flights in the  sfo_feb_flights data frame, grouped by carrier. Which carrier is the has the hights IQR of arrival delays?
+```{r}
+sfo_feb_flights %>% group_by(carrier) %>% summarise(iqr = IQR(arr_delay), med = median(arr_delay))
+```
+
+
+#### arrange these average delays in descending order
+```{r}
+nycflights %>%
+  group_by(month) %>%
+  summarise(mean_dd = mean(dep_delay)) %>%
+  arrange(desc(mean_dd))
+```
+
+
+#### Which month has the highest median departure delay from an NYC airport?
+
+```{r}
+nycflights %>%
+  group_by(month) %>%
+  summarise(median_dd = median(dep_delay)) %>%
+  arrange(desc(median_dd))
+```
+
+
+#### flight that is delayed for less than 5 minutes is basically “on time”. You consider any flight delayed for 5 minutes of more to be “delayed”.
+
+ In ords by origin airport, - then calculate on time departure rates for each origin airport, - and finally arrange the airports in descending order for on time departure percentage.
+
+Let’s start with classifying each flight as “on time” or “delayed” by creating a new variable with the mutate function.
+
+
+```{r}
+nycflights <- nycflights %>%
+  mutate(dep_type = ifelse(dep_delay < 5, "on time", "delayed"))
+```
+mutate function is the name of the new variable we want to create, in this case dep_type. 
+
+dep_delay < 5 we classify the flight as "on time" and "delayed" if not, i.e. if the flight is delayed for 5 or more minutes.
+
+overwriting the nycflights data frame with the new version of this data frame that includes the new  dep_type variable.
+
+
+```{r}
+nycflights %>%
+  group_by(origin) %>%
+  summarise(ot_dep_rate = sum(dep_type == "on time") / n()) %>%
+  arrange(desc(ot_dep_rate))
+```
+
+```{r}
+nycflights %>%
+  group_by(origin) %>%
+  summarise(ot = sum(dep_delay<5)/n()) %>%
+  arrange(desc(ot))
+```
+
+```{r}
+ggplot(data = nycflights, aes(x = origin, fill = dep_type)) +
+  geom_bar()
+```
+
+```{r}
+nycflights <-nycflights %>%
+  mutate(avg_speed=60*distance/air_time)
+
+select(nycflights,tailnum, avg_speed) %>%
+  arrange(desc(avg_speed))
+```
+
+```{r}
+nycflights %>%
+  group_by(dep_type) %>%
+  summarise(ot_rate = sum(arr_delay<=0)/n())
+```
+
+
