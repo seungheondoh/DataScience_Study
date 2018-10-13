@@ -20,6 +20,8 @@ UNIST 이정혜 교수님의 경영공학과 수업 MGE30301: Data Mining 을 �
 
 #### Reference:
 문서의 내용은 다음과 같은 사이트를 참조하였습니다.
+<br>
+
 __자료구조 및 알고리즘__
 - https://classroom.udacity.com/courses/ud513 (수강)
 - https://www.inflearn.com/course/%EC%BD%94%EB%94%A9-%EC%9D%B8%ED%84%B0%EB%B7%B0/ (수강)
