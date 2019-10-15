@@ -38,3 +38,4 @@
 6.Probabilistic Graphical Model/pgmpy/pgmpy_notebook/notebooks/9. Learning Bayesian Networks from Data.ipynb
 6.Probabilistic Graphical Model/pgmpy/pgmpy_notebook/scripts/1/discretize.py
 *.wav
+*.ipynb
